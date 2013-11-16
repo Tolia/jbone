@@ -1,4 +1,18 @@
+var
+
+// Matches dashed string for camelizing
+rdashAlpha = /-([\da-z])/gi,
+
+// Used by jBone.camelCase as callback to replace()
+fcamelCase = function(all, letter) {
+    return letter.toUpperCase();
+};
+
 jBone.support = {};
+
+jBone.proxy = function(fn, context) {
+    return fn.bind(context);
+};
 
 jBone.fn.each = function(fn) {
     var length = this.length >>> 0,
@@ -69,7 +83,15 @@ jBone.fn.click = function() {
     return this.trigger("click");
 };
 
-jBone.fn.height = function() {
+jBone.fn.height = function(value) {
+    if (value !== undefined) {
+        this.forEach(function(el) {
+            el.style.height = value;
+        });
+
+        return this;
+    }
+
     return this[0].clientHeight;
 };
 
@@ -96,12 +118,14 @@ jBone.fn.children = function() {
     var result = [];
 
     this.forEach(function(el) {
-        if (el.childNodes) {
-            result = result.concat([].slice.call(el.childNodes));
-        }
+        [].forEach.call(el.childNodes, function(el) {
+            if (el.nodeType !== 3) {
+                result.push(el);
+            }
+        });
     });
 
-    return result;
+    return jBone(result);
 };
 
 jBone.fn.not = function(condition) {
@@ -113,3 +137,82 @@ jBone.fn.not = function(condition) {
 
     return jBone(result);
 };
+
+jBone.fn.focus = function() {
+    return this.trigger("focus");
+};
+
+jBone.fn.siblings = function(includeSelf) {
+    var result = [], parent;
+
+    this.forEach(function(el) {
+        if (parent = el.parentNode) {
+            [].forEach.call(el.parentNode.childNodes, function(node) {
+                if (includeSelf === undefined && node !== el && node.nodeType !== 3) {
+                    result.push(node);
+                } else if (includeSelf === true && node.nodeType !== 3) {
+                    result.push(node);
+                }
+            });
+        }
+    });
+
+    return jBone(result);
+};
+
+jBone.fn.next = function() {
+    var result = [],
+        siblings, index;
+
+    this.forEach(function(el) {
+        siblings = jBone(el).siblings(true),
+        index = [].indexOf.call(siblings, el);
+
+        if (index !== siblings.length) {
+            result.push(siblings[index + 1]);
+        }
+    }, this);
+
+    return jBone(result);
+};
+
+
+jBone.fn.prev = function() {
+    var result = [],
+        siblings, index;
+
+    this.forEach(function(el) {
+        siblings = jBone(el).siblings(true),
+        index = [].indexOf.call(siblings, el);
+
+        if (index > 0) {
+            result.push(siblings[index - 1]);
+        }
+    }, this);
+
+    return jBone(result);
+};
+
+jBone.fn.first = function() {
+    return this.eq(0);
+};
+
+jBone.fn.last = function() {
+    return this.eq(this.length - 1);
+};
+
+jBone.fn.index = function(element) {
+    if (element instanceof jBone) {
+        element = element[0];
+    }
+
+    if (element instanceof HTMLElement) {
+        return this.indexOf(element);
+    }
+};
+
+jBone.camelCase = function(string) {
+    return string.replace(rdashAlpha, fcamelCase);
+};
+
+jBone.fn.bind = jBone.fn.on;
