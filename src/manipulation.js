@@ -1,11 +1,11 @@
-jBone.fn.html = function() {
-    var value = arguments[0], result;
+jBone.fn.html = function(value) {
+    var result = [];
 
     // add HTML into elements
     if (value !== undefined) {
         this.empty.call(this);
 
-        if (!(value instanceof Object) && !rquickExpr.exec(value)) {
+        if (!isObject(value) && !rquickExpr.exec(value)) {
             this.forEach(function(el) {
                 if (el instanceof HTMLElement) {
                     el.innerHTML = value;
@@ -17,22 +17,19 @@ jBone.fn.html = function() {
 
         return this;
     }
+
     // get HTML from element
-    else {
-        result = [];
+    this.forEach(function(el) {
+        if (el instanceof HTMLElement) {
+            result.push(el.innerHTML);
+        }
+    });
 
-        this.forEach(function(el) {
-            if (el instanceof HTMLElement) {
-                result.push(el.innerHTML);
-            }
-        });
-
-        return result.length ? result.join("") : null;
-    }
+    return result.length ? result.join("") : null;
 };
 
 jBone.fn.append = function(appended) {
-    if (typeof appended === "string") {
+    if (isString(appended)) {
         appended = jBone(appended);
     }
 

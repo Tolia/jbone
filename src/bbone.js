@@ -1,38 +1,5 @@
 jBone.support = {};
 
-jBone.extend = function(target) {
-    [].splice.call(arguments, 1).forEach(function(object) {
-      for (var prop in object) {
-        target[prop] = object[prop];
-      }
-    });
-
-    return target;
-};
-
-jBone.fn.data = function(key, value) {
-    if (arguments.length === 0) {
-        return jBone.extend({}, this[0].dataset, this[0].jdata);
-    }
-
-    if (arguments.length === 2) {
-        return this[0].dataset[key] || this[0].jdata && this[0].jdata[key];
-    }
-
-    if (value instanceof Object) {
-        this.forEach(function(el) {
-            el.jdata = el.jdata || {};
-            el.jdata[key] = value;
-        });
-    } else {
-        this.forEach(function(el) {
-            el.dataset[key] = value;
-        });
-    }
-
-    return this;
-};
-
 jBone.fn.each = function(fn) {
     var length = this.length >>> 0,
         i = -1;

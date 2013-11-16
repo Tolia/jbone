@@ -6,6 +6,20 @@ rsingleTag = /^<(\w+)\s*\/?>(?:<\/\1>|)$/,
 // Prioritize #id over <tag> to avoid XSS via location.hash
 rquickExpr = /^(?:[^#<]*(<[\w\W]+>)[^>]*$|#([\w\-]*)$)/,
 
+slice = [].slice,
+
+doc = document,
+
+win = window,
+
+isString = function(el) {
+    return typeof el === "string";
+},
+
+isObject = function(el) {
+    return el instanceof Object;
+},
+
 jBone = function(element, data) {
     if (this instanceof jBone) {
         return init.call(this, element, data);
@@ -40,7 +54,7 @@ init = function(element, data) {
     elements = Array.isArray(elements) ? elements : [elements];
     jBone.merge(this, elements);
 
-    if (data instanceof Object && !jBone.isElement(data)) {
+    if (isObject(data) && !jBone.isElement(data)) {
         this.attr(data);
     }
 
@@ -50,21 +64,21 @@ init = function(element, data) {
 getElement = function(element, context) {
     var tag, wraper;
 
-    if (typeof element === "string" && (tag = rsingleTag.exec(element))) {
-        return document.createElement(tag[1]);
-    } else if (typeof element === "string" && (tag = rquickExpr.exec(element)) && tag[1]) {
-        wraper = document.createElement("div");
+    if (isString(element) && (tag = rsingleTag.exec(element))) {
+        return doc.createElement(tag[1]);
+    } else if (isString(element) && (tag = rquickExpr.exec(element)) && tag[1]) {
+        wraper = doc.createElement("div");
         wraper.innerHTML = element;
-        return [].slice.call(wraper.childNodes);
-    } else if (typeof element === "string") {
+        return slice.call(wraper.childNodes);
+    } else if (isString(element)) {
         if (jBone.isElement(context)) {
             return jBone(context).find(element);
         }
 
         try {
-            return [].slice.call(document.querySelectorAll(element));
+            return slice.call(doc.querySelectorAll(element));
         } catch (e) {
-            return [];
+            return;
         }
     }
 
@@ -74,7 +88,7 @@ getElement = function(element, context) {
 jBone.setId = function(el) {
     var jid = el.jid || undefined;
 
-    if (el === window) {
+    if (el === win) {
         jid = "window";
     } else if (!el.jid) {
         jid = ++jBone._cache.jid;
@@ -89,7 +103,7 @@ jBone.setId = function(el) {
 jBone.getData = function(el) {
     el = el instanceof jBone ? el[0] : el;
 
-    var jid = el === window ? "window" : el.jid;
+    var jid = el === win ? "window" : el.jid;
 
     return {
         jid: jid,
@@ -98,49 +112,7 @@ jBone.getData = function(el) {
 };
 
 jBone.isElement = function(el) {
-    return el instanceof jBone || el instanceof HTMLElement || typeof el === "string";
-};
-
-jBone.merge = function(first, second) {
-    var l = second.length,
-        i = first.length,
-        j = 0;
-
-    if (typeof l === "number") {
-        while (j < l) {
-            first[i++] = second[j];
-            j++;
-        }
-    } else {
-        while (second[j] !== undefined) {
-            first[i++] = second[j++];
-        }
-    }
-
-    first.length = i;
-
-    return first;
-};
-
-jBone.contains = function(container, contained) {
-    var search, result;
-
-    search = function(el, element) {
-        if (el === element) {
-            return result = el;
-        }
-        if (!el.parentNode) {
-            return;
-        }
-
-        search(el.parentNode, element);
-    };
-
-    container.forEach(function(element) {
-        search(contained.parentNode, element);
-    });
-
-    return result;
+    return el instanceof jBone || el instanceof HTMLElement || isString(el);
 };
 
 jBone._cache = {
