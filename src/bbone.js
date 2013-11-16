@@ -1,11 +1,7 @@
 jBone.support = {};
 
 jBone.extend = function(target) {
-    var objects;
-
-    objects = [].splice.call(arguments, 1);
-
-    objects.forEach(function(object) {
+    [].splice.call(arguments, 1).forEach(function(object) {
       for (var prop in object) {
         target[prop] = object[prop];
       }
@@ -14,37 +10,37 @@ jBone.extend = function(target) {
     return target;
 };
 
-jBone.fn.each = function(fn) {
-    var length, i;
+jBone.fn.data = function(key, value) {
+    if (arguments.length === 0) {
+        return jBone.extend({}, this[0].dataset, this[0].jdata);
+    }
 
-    length = this.length >>> 0;
-    i = -1;
+    if (arguments.length === 2) {
+        return this[0].dataset[key] || this[0].jdata && this[0].jdata[key];
+    }
 
-    while (++i < length) {
-        if (i in this) {
-            fn.call(this, i, this[i]);
-        }
+    if (value instanceof Object) {
+        this.forEach(function(el) {
+            el.jdata = el.jdata || {};
+            el.jdata[key] = value;
+        });
+    } else {
+        this.forEach(function(el) {
+            el.dataset[key] = value;
+        });
     }
 
     return this;
 };
 
-jBone.fn.data = function(key, value) {
-    if (arguments.length === 0) {
-        return jBone.extend({}, this[0].dataset, this[0].datajbone);
-    }
+jBone.fn.each = function(fn) {
+    var length = this.length >>> 0,
+        i = -1;
 
-    if (value instanceof Object) {
-        this.forEach(function(el) {
-            el.datajbone = el.datajbone || {};
-            el.datajbone[key] = value;
-        });
-    } else if (value !== undefined) {
-        this.forEach(function(el) {
-            el.dataset[key] = value;
-        });
-    } else {
-        return this[0].dataset[key] || this[0].datajbone && this[0].datajbone[key];
+    while (++i < length) {
+        if (i in this) {
+            fn.call(this, i, this[i]);
+        }
     }
 
     return this;
