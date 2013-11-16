@@ -1,4 +1,4 @@
-jBone.Event = function(event) {
+jBone.Event = function(event, data) {
     var namespace, eventType;
 
     namespace = event.split(".").splice(1).join(".");
@@ -7,12 +7,12 @@ jBone.Event = function(event) {
     event = doc.createEvent("Event");
     event.initEvent(eventType, true, true);
 
-    event.namespace = namespace;
-    event.isDefaultPrevented = function() {
-        return event.defaultPrevented;
-    };
-
-    return event;
+    return jBone.extend(event, {
+        namespace: namespace,
+        isDefaultPrevented: function() {
+            return event.defaultPrevented;
+        }
+    }, data);
 };
 
 jBone.fn.on = function(event) {
@@ -31,7 +31,7 @@ jBone.fn.on = function(event) {
         event.split(" ").forEach(function(event) {
             eventType = event.split(".")[0];
             namespace = event.split(".").splice(1).join(".");
-            events[eventType] = events[eventType] ? events[eventType] : [];
+            events[eventType] = events[eventType] || [];
 
             fn = function(e) {
                 if (e.namespace && e.namespace !== namespace) {
@@ -55,9 +55,7 @@ jBone.fn.on = function(event) {
                 originfn: callback
             });
 
-            if (el.addEventListener) {
-                el.addEventListener(eventType, fn, false);
-            }
+            el.addEventListener && el.addEventListener(eventType, fn, false);
         });
     });
 
@@ -81,7 +79,7 @@ jBone.fn.one = function() {
                 jBone(el).off(event, fn);
             };
 
-            if (args.length === 2) {
+            if (!target) {
                 jBone(el).on(event, fn);
             } else {
                 jBone(el).on(event, target, fn);
@@ -101,7 +99,7 @@ jBone.fn.trigger = function(event) {
 
     if (isString(event)) {
         events = event.split(" ").map(function(event) {
-            return $.Event(event);
+            return jBone.Event(event);
         });
     } else {
         events = [event];
@@ -113,9 +111,7 @@ jBone.fn.trigger = function(event) {
                 return;
             }
 
-            if (el.dispatchEvent) {
-                el.dispatchEvent(event);
-            }
+            el.dispatchEvent && el.dispatchEvent(event);
         });
     });
 
@@ -152,9 +148,9 @@ jBone.fn.off = function(event, fn) {
                     }
                 });
             }
-            // remove namespaced events
+            // remove all namespaced events
             else if (namespace) {
-                Object.keys(events).forEach(function(key) {
+                keys(events).forEach(function(key) {
                     events[key].forEach(function(e) {
                         callback = getCallback(e);
                         if (e.namespace === namespace) {

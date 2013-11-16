@@ -29,6 +29,12 @@ module.exports = function(grunt) {
           jshintrc: "src/.jshintrc"
         }
       },
+      dist: {
+        src: ["dist/jbone.js"],
+        options: {
+          jshintrc: "dist/.jshintrc"
+        }
+      },
       tests: {
         src: ["test/**/*.js"],
         options: {
