@@ -155,7 +155,7 @@ jBone.fn.off = function(event, fn) {
                 keys(events).forEach(function(key) {
                     events[key].forEach(function(e) {
                         callback = getCallback(e);
-                        if (e.namespace === namespace) {
+                        if (e.namespace.split(".")[0] === namespace.split(".")[0]) {
                             el.removeEventListener(key, callback);
                         }
                     });
