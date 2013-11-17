@@ -301,4 +301,12 @@ jBone.proxy = function(fn, context) {
     return fn.bind(context);
 };
 
+jBone.fn.map = function() {
+    return jBone([].map.apply(this, arguments));
+};
+
+jBone.fn.scrollTop = function() {
+    return this[0].scrollTop || this[0].scrollY || 0;
+};
+
 jBone.support = {};
