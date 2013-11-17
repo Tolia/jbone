@@ -177,34 +177,26 @@ jBone.fn.siblings = function(includeSelf) {
 };
 
 jBone.fn.next = function() {
-    var result = [],
-        siblings, index;
+    var result = [], next;
 
     this.forEach(function(el) {
-        siblings = jBone(el).siblings(true),
-        index = [].indexOf.call(siblings, el);
-
-        if (index !== siblings.length) {
-            result.push(siblings[index + 1]);
+        if (!~result.indexOf(next = el.nextElementSibling) && next) {
+            result.push(next);
         }
-    }, this);
+    });
 
     return jBone(result);
 };
 
 
 jBone.fn.prev = function() {
-    var result = [],
-        siblings, index;
+    var result = [], previous;
 
     this.forEach(function(el) {
-        siblings = jBone(el).siblings(true),
-        index = [].indexOf.call(siblings, el);
-
-        if (index > 0) {
-            result.push(siblings[index - 1]);
+        if (!~result.indexOf(previous = el.previousElementSibling) && previous) {
+            result.push(previous);
         }
-    }, this);
+    });
 
     return jBone(result);
 };
@@ -307,6 +299,26 @@ jBone.fn.map = function() {
 
 jBone.fn.scrollTop = function() {
     return this[0].scrollTop || this[0].scrollY || 0;
+};
+
+jBone.fn.text = function() {
+    var result = [];
+
+    this.forEach(function(el) {
+        result.push(el.textContent);
+    });
+
+    return result.join("");
+};
+
+jBone.fn.detach = function() {
+    this.forEach(function(el) {
+        if (el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
+    });
+
+    return this;
 };
 
 jBone.support = {};
