@@ -1,6 +1,11 @@
 jBone.Event = function(event, data) {
     var namespace, eventType;
 
+    if (event.type && !data) {
+        data = event;
+        event = event.type;
+    }
+
     namespace = event.split(".").splice(1).join(".");
     eventType = event.split(".")[0];
 
@@ -98,6 +103,7 @@ jBone.fn.trigger = function(event) {
             return jBone.Event(event);
         });
     } else {
+        event = event instanceof Event ? event : $.Event(event);
         events = [event];
     }
 
