@@ -1,26 +1,10 @@
-var
-
-// Matches dashed string for camelizing
-rdashAlpha = /-([\da-z])/gi,
-
-// Used by jBone.camelCase as callback to replace()
-fcamelCase = function(all, letter) {
-    return letter.toUpperCase();
-};
-
-jBone.support = {};
-
-jBone.proxy = function(fn, context) {
-    return fn.bind(context);
-};
-
 jBone.fn.each = function(fn) {
     var length = this.length >>> 0,
         i = -1;
 
     while (++i < length) {
         if (i in this) {
-            fn.call(this, i, this[i]);
+            fn.call(this[i], i, this[i]);
         }
     }
 
@@ -110,6 +94,34 @@ jBone.fn.closest = function(selector) {
     parents.some(function(parent) {
         return result = jBone.contains(jBone(parent), target);
     });
+
+    return jBone(result);
+};
+
+jBone.fn.parents = function(selector) {
+    var result = [], parents, target;
+
+    if (selector) {
+        parents = jBone(selector);
+
+        parents.forEach(function(parent) {
+            this.forEach(function(el) {
+                if ((target = jBone.contains(jBone(parent), el)) && target.nodeType !== 9 && !~result.indexOf(target)) {
+                    result.push(target);
+                }
+            });
+        }, this);
+    } else {
+        this.forEach(function(el) {
+            target = el;
+
+            while ((target = target.parentNode) && target.nodeType !== 9) {
+                if (!~result.indexOf(target)) {
+                    result.push(target);
+                }
+            }
+        });
+    }
 
     return jBone(result);
 };
@@ -211,8 +223,37 @@ jBone.fn.index = function(element) {
     }
 };
 
-jBone.camelCase = function(string) {
-    return string.replace(rdashAlpha, fcamelCase);
+jBone.fn.is = function(match) {
+    match = match.split(", ");
+
+    return this.some(function(el) {
+        return match.some(function(match) {
+            // check attribute
+            if (match[0] === ":") {
+                return el.getAttribute(match.split(":")[1]) !== null;
+            }
+            // check class
+            else if (match[0] === ".") {
+                return el.classList.contains(match.split(".")[1]);
+            }
+            // check tagName
+            else if (el.tagName.toLowerCase() === match) {
+                return true;
+            }
+        });
+    });
 };
 
 jBone.fn.bind = jBone.fn.on;
+
+jBone.camelCase = function(string) {
+    return string.replace(/-([\da-z])/gi, function(all, letter) {
+        return letter.toUpperCase();
+    });
+};
+
+jBone.proxy = function(fn, context) {
+    return fn.bind(context);
+};
+
+jBone.support = {};
