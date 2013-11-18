@@ -1,3 +1,30 @@
+function Event(e, data) {
+    var key, setter;
+
+    this.originalEvent = e;
+
+    setter = function(key, e) {
+        if (key === "preventDefault") {
+            this[key] = function() {
+                this.defaultPrevented = true;
+                return e[key]();
+            };
+        } else if (typeof e[key] === "function") {
+            this[key] = function() {
+                return e[key]();
+            };
+        } else {
+            this[key] = e[key];
+        }
+    };
+
+    for (key in e) {
+        setter.call(this, key, e);
+    }
+
+    jBone.extend(this, data);
+}
+
 jBone.Event = function(event, data) {
     var namespace, eventType;
 
@@ -22,7 +49,7 @@ jBone.Event = function(event, data) {
 
 jBone.fn.on = function(event) {
     var args = arguments,
-        callback, target, namespace, fn, events, eventType;
+        callback, target, namespace, fn, events, eventType, expectedTarget;
 
     if (args.length === 2) {
         callback = args[1];
@@ -43,10 +70,16 @@ jBone.fn.on = function(event) {
                     return;
                 }
 
+                expectedTarget = null;
                 if (!target) {
                     callback.call(el, e);
-                } else if (~jBone(el).find(target).indexOf(e.target) || jBone.contains(jBone(el).find(target), e.target)) {
-                    callback.call(e.target, e);
+                } else if (~jBone(el).find(target).indexOf(e.target) || (expectedTarget = jBone.contains(jBone(el).find(target), e.target))) {
+                    expectedTarget = expectedTarget || e.target;
+                    e = new Event(e, {
+                        currentTarget: expectedTarget
+                    });
+
+                    callback.call(expectedTarget, e);
                 }
             };
 
